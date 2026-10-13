@@ -1,0 +1,49 @@
+// Prisma schema —— 图书借阅系统后台
+// 数据表与试卷要求一致:book_info(图书信息表)、book_type(图书类型表),
+// 并扩展 sys_user(系统用户表)用于登录。
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+/// 图书类型表
+model BookType {
+  id       Int    @id @default(autoincrement())
+  typeName String @db.VarChar(50)
+
+  @@map("book_type")
+}
+
+/// 图书信息表
+model BookInfo {
+  bookId         Int       @id @default(autoincrement())
+  bookCode       String    @db.VarChar(50) // 图书编号
+  bookName       String    @db.VarChar(100) // 图书名称
+  bookType       Int // 图书类型(关联 book_type.id)
+  bookAuthor     String    @db.VarChar(50) // 图书作者
+  publishPress   String    @db.VarChar(100) // 出版社
+  publishDate    DateTime  @db.Date // 出版日期
+  borrowed       Int       @default(0) // 是否借阅:1 已借阅 / 0 未借阅
+  createdBy      String    @db.VarChar(50) // 入库人
+  creationTime   DateTime  @default(now()) // 入库时间
+  lastUpdatetime DateTime? @updatedAt // 最新更新时间
+
+  @@index([creationTime])
+  @@map("book_info")
+}
+
+/// 系统用户表(登录用)
+model SysUser {
+  id       Int    @id @default(autoincrement())
+  username String @unique @db.VarChar(50)
+  password String @db.VarChar(100) // bcrypt 哈希
+  realName String @db.VarChar(50)
+  role     String @default("admin") @db.VarChar(20)
+
+  @@map("sys_user")
+}
